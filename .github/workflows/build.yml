@@ -1,0 +1,64 @@
+name: Compilar APK Android
+
+on:
+  push:
+    branches: [ main, master ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Clonar repositorio
+      uses: actions/checkout@v3
+
+    - name: Configurar Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.10'
+
+    - name: Instalar dependencias del sistema para Buildozer
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y \
+            python3-pip \
+            build-python \
+            git \
+            zip \
+            unzip \
+            autoconf \
+            libtool \
+            pkg-config \
+            zlib1g-dev \
+            libncurses5-dev \
+            libncursesw5-dev \
+            libffi-dev \
+            libssl-dev
+
+    - name: Instalar Buildozer y Cython
+      run: |
+        pip install --upgrade pip
+        pip install --upgrade cython==0.29.33 buildozer
+
+    - name: Inicializar configuración de Buildozer
+      run: |
+        buildozer init || true
+
+    - name: Configurar buildozer.spec automáticamente
+      run: |
+        sed -i 's/#(title)s/title = SSC Huejotzingo/g' buildozer.spec
+        sed -i 's/#(package.name)s/package.name = sschuejotzingo/g' buildozer.spec
+        sed -i 's/#(package.domain)s/package.domain = org.seguridad/g' buildozer.spec
+        sed -i 's/#(requirements)s/requirements = python3,kivy,requests,plyer,urllib3,certifi,idna,charset-normalizer/g' buildozer.spec
+        sed -i 's/#(android.permissions)s/android.permissions = INTERNET, ACCESS_FINE_LOCATION, ACCESS_COARSE_LOCATION, FOREGROUND_SERVICE/g' buildozer.spec
+        sed -i 's/#(orientation)s/orientation = portrait/g' buildozer.spec
+
+    - name: Compilar APK con Buildozer
+      run: |
+        buildozer -v android debug
+
+    - name: Subir APK como artefacto descargable
+      uses: actions/upload-artifact@v3
+      with:
+        name: app-android-debug
+        path: bin/*.apk
