@@ -53,18 +53,24 @@ jobs:
         sed -i 's/#(android.permissions)s/android.permissions = INTERNET, ACCESS_FINE_LOCATION, ACCESS_COARSE_LOCATION, FOREGROUND_SERVICE/g' buildozer.spec
         sed -i 's/#(orientation)s/orientation = portrait/g' buildozer.spec
 
-    - name: Instalar y enlazar SDK Commandline Tools correctamente
+    - name: Configurar Android SDK y licencias de forma manual
       run: |
         ANDROID_HOME="/home/runner/.buildozer/android/platform/android-sdk"
-        mkdir -p $ANDROID_HOME/cmdline-tools
+        mkdir -p $ANDROID_HOME/licenses
+        echo -e "\n8933bad161af4178b1185d1a37fbf41ea5269c55" > $ANDROID_HOME/licenses/android-sdk-license
+        echo -e "\nd56f5187479451eabf51fb78af6dfcbd139694ef" >> $ANDROID_HOME/licenses/android-sdk-license
+        echo -e "\n24333f8a43b682e23c829b350621305a068eb477" >> $ANDROID_HOME/licenses/android-sdk-license
+
+        # Descargar commandline-tools para asegurar sdkmanager
+        cd /tmp
         wget https://dl.google.com/android/repository/commandlinetools-linux-9477386_latest.zip -O cmdline-tools.zip
         unzip -q cmdline-tools.zip
         mkdir -p $ANDROID_HOME/cmdline-tools/latest
         mv cmdline-tools/* $ANDROID_HOME/cmdline-tools/latest/ || true
-        # Crear la carpeta tools antigua y enlazar sdkmanager para que Buildozer lo detecte de inmediato
+        
+        # Enlazar las herramientas para que Buildozer las reconozca de inmediato
         mkdir -p $ANDROID_HOME/tools/bin
-        ln -s $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager $ANDROID_HOME/tools/bin/sdkmanager
-        yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --sdk_root=$ANDROID_HOME "build-tools;33.0.0" "platforms;android-33" "platform-tools"
+        ln -sf $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager $ANDROID_HOME/tools/bin/sdkmanager
 
     - name: Compilar APK con Buildozer
       run: |
