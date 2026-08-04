@@ -52,11 +52,16 @@ jobs:
         sed -i 's/#(android.permissions)s/android.permissions = INTERNET, ACCESS_FINE_LOCATION, ACCESS_COARSE_LOCATION, FOREGROUND_SERVICE/g' buildozer.spec
         sed -i 's/#(orientation)s/orientation = portrait/g' buildozer.spec
 
+    - name: Aceptar licencias de Android SDK por adelantado
+      run: |
+        mkdir -p /home/runner/.buildozer/android/platform/android-sdk/licenses
+        echo -e "\n8933bad161af4178b1185d1a37fbf41ea5269c55" > /home/runner/.buildozer/android/platform/android-sdk/licenses/android-sdk-license
+        echo -e "\nd56f5187479451eabf51fb78af6dfcbd139694ef" >> /home/runner/.buildozer/android/platform/android-sdk/licenses/android-sdk-license
+        echo -e "\n24333f8a43b682e23c829b350621305a068eb477" >> /home/runner/.buildozer/android/platform/android-sdk/licenses/android-sdk-license
+
     - name: Compilar APK con Buildozer
       run: |
         buildozer -v android debug
-      env:
-        ANDROIDSDK_ACCEPT_LICENSES: "True"
 
     - name: Subir APK
       uses: actions/upload-artifact@v4
