@@ -40,37 +40,38 @@ jobs:
         pip install --upgrade pip
         pip install --upgrade cython==0.29.33 buildozer
 
-    - name: Inicializar buildozer.spec
+    - name: Crear buildozer.spec limpio y configurado
       run: |
-        buildozer init || true
+        cat << 'EOF' > buildozer.spec
+        [app]
+        title = SSC Huejotzingo
+        package.name = sschuejotzingo
+        package.domain = org.seguridad
+        source.dir = .
+        source.include_exts = py,png,jpg,kv,atlas
+        version = 1.0
+        requirements = python3,kivy,requests,plyer,urllib3,certifi,idna,charset-normalizer
+        orientation = portrait
+        osx.python_version = 3
+        osx.kivy_version = 1.9.1
+        fullscreen = 0
+        android.permissions = INTERNET,ACCESS_FINE_LOCATION,ACCESS_COARSE_LOCATION,FOREGROUND_SERVICE
+        android.api = 31
+        android.minapi = 21
+        android.ndk = 25b
+        android.accept_sdk_license = True
+        [buildozer]
+        log_level = 2
+        warn_on_root = 1
+        EOF
 
-    - name: Configurar buildozer.spec
+    - name: Preautorizar licencias de Android SDK
       run: |
-        sed -i 's/#(title)s/title = SSC Huejotzingo/g' buildozer.spec
-        sed -i 's/#(package.name)s/package.name = sschuejotzingo/g' buildozer.spec
-        sed -i 's/#(package.domain)s/package.domain = org.seguridad/g' buildozer.spec
-        sed -i 's/#(requirements)s/requirements = python3,kivy,requests,plyer,urllib3,certifi,idna,charset-normalizer/g' buildozer.spec
-        sed -i 's/#(android.permissions)s/android.permissions = INTERNET, ACCESS_FINE_LOCATION, ACCESS_COARSE_LOCATION, FOREGROUND_SERVICE/g' buildozer.spec
-        sed -i 's/#(orientation)s/orientation = portrait/g' buildozer.spec
-
-    - name: Configurar Android SDK y licencias de forma manual
-      run: |
-        ANDROID_HOME="/home/runner/.buildozer/android/platform/android-sdk"
-        mkdir -p $ANDROID_HOME/licenses
-        echo -e "\n8933bad161af4178b1185d1a37fbf41ea5269c55" > $ANDROID_HOME/licenses/android-sdk-license
-        echo -e "\nd56f5187479451eabf51fb78af6dfcbd139694ef" >> $ANDROID_HOME/licenses/android-sdk-license
-        echo -e "\n24333f8a43b682e23c829b350621305a068eb477" >> $ANDROID_HOME/licenses/android-sdk-license
-
-        # Descargar commandline-tools para asegurar sdkmanager
-        cd /tmp
-        wget https://dl.google.com/android/repository/commandlinetools-linux-9477386_latest.zip -O cmdline-tools.zip
-        unzip -q cmdline-tools.zip
-        mkdir -p $ANDROID_HOME/cmdline-tools/latest
-        mv cmdline-tools/* $ANDROID_HOME/cmdline-tools/latest/ || true
-        
-        # Enlazar las herramientas para que Buildozer las reconozca de inmediato
-        mkdir -p $ANDROID_HOME/tools/bin
-        ln -sf $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager $ANDROID_HOME/tools/bin/sdkmanager
+        SDK_DIR="/home/runner/.buildozer/android/platform/android-sdk"
+        mkdir -p $SDK_DIR/licenses
+        echo -e "\n8933bad161af4178b1185d1a37fbf41ea5269c55" > $SDK_DIR/licenses/android-sdk-license
+        echo -e "\nd56f5187479451eabf51fb78af6dfcbd139694ef" >> $SDK_DIR/licenses/android-sdk-license
+        echo -e "\n24333f8a43b682e23c829b350621305a068eb477" >> $SDK_DIR/licenses/android-sdk-license
 
     - name: Compilar APK con Buildozer
       run: |
