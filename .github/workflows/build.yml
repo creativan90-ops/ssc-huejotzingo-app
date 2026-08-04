@@ -52,9 +52,11 @@ jobs:
         sed -i 's/#(android.permissions)s/android.permissions = INTERNET, ACCESS_FINE_LOCATION, ACCESS_COARSE_LOCATION, FOREGROUND_SERVICE/g' buildozer.spec
         sed -i 's/#(orientation)s/orientation = portrait/g' buildozer.spec
 
-    - name: Compilar APK con Buildozer (Aceptando licencias automáticamente)
+    - name: Compilar APK con Buildozer
       run: |
-        yes | buildozer -v android debug
+        buildozer -v android debug
+      env:
+        ANDROIDSDK_ACCEPT_LICENSES: "True"
 
     - name: Subir APK
       uses: actions/upload-artifact@v4
