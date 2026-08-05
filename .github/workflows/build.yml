@@ -82,9 +82,9 @@ jobs:
         mkdir -p $SDK_DIR/tools/bin
         ln -sf $SDK_DIR/cmdline-tools/latest/bin/sdkmanager $SDK_DIR/tools/bin/sdkmanager
 
-    - name: Compilar APK con Buildozer en modo detallado
+    - name: Compilar APK con Buildozer y capturar error
       run: |
-        buildozer -d android debug
+        buildozer -v android debug || (echo "=== MOSTRANDO ÚLTIMAS LÍNEAS DEL ERROR ===" && exit 1)
 
     - name: Subir APK
       uses: actions/upload-artifact@v4
